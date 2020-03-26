@@ -39,7 +39,9 @@ import tty
 from geometry_msgs.msg import Twist
 
 import rclpy
-from rclpy.qos import qos_profile_default
+from rclpy.qos import QoSProfile
+from rclpy.qos import QoSHistoryPolicy
+from rclpy.duration import Duration
 
 msg = """
 This node takes keypresses from the keyboard and publishes them
@@ -115,10 +117,12 @@ def main():
     settings = termios.tcgetattr(sys.stdin)
 
     rclpy.init()
+    qos_profile = QoSProfile(history = QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+                            depth = 1,
+                            deadline = Duration(seconds = 2))
 
     node = rclpy.create_node('teleop_twist_keyboard')
-    pub = node.create_publisher(
-        Twist, 'cmd_vel', qos_profile=qos_profile_default)
+    pub = node.create_publisher(Twist, '/diff_bot/cmd_vel', qos_profile)
 
     speed = 0.5
     turn = 1.0
